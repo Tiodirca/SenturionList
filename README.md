@@ -1,4 +1,4 @@
-# senturionlistv2
+# Senturion List
 
 Aplicativo criado para o cadastro dos nomes de cooperadores(as) da Igreja Assembleia de Deus Ministerio Belem.
 Onde o usuario pode criar uma escala/tabela no banco de dados
