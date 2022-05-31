@@ -11,7 +11,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-  // gerar arquivos para web flutter build web
+  // gerar arquivos para flutter web flutter build web
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

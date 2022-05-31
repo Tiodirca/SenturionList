@@ -41,7 +41,7 @@ class GerarPDF {
   gerarPDF(String nomePDF, List<ListaModelo> _lista,String tipoListagem,
       String observacao) async {
     final pdfLib.Document pdf = pdfLib.Document();
-    //definindo que a variavel vai receber o caminho da imagem
+    //definindo que a variavel vai receber o caminho da imagem para serem exibidas
     final image =
     (await rootBundle.load('assets/imagens/adtl.png')).buffer.asUint8List();
     final imageLogo =
