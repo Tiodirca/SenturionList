@@ -28,9 +28,9 @@ class GerarPDF {
       ]);
     }else{
       listaLegenda.addAll([
+        Textos.labelMesaApoio,
         Textos.labelPrimeiraHoraEntrada,
         Textos.labelSegundaHoraEntrada,
-        Textos.labelMesaApoio
       ]);
     }
     listaLegenda.addAll(
@@ -148,9 +148,9 @@ class GerarPDF {
         listaLegenda,..._lista.map((e) => [
           e.dataSemana,
           e.horario,
+          e.mesaApoio,
           e.primeiroHorario,
           e.segundoHorario,
-          e.mesaApoio,
           e.uniforme,
           e.servirCeia,
           e.recolherOferta,
