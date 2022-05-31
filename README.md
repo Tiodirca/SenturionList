@@ -1,16 +1,7 @@
-# senturionlistv2
+# Senturion List
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Aplicativo criado para o cadastro dos nomes de cooperadores(as) da Igreja Assembleia de Deus Ministerio Belem.
+Onde o usuario pode criar uma escala/tabela no banco de dados
+Adicionar o nome do cooperador(a) nos campos correspondentes ao local que ele estara escalado,bem como a data que o mesmo ira trabalhar,
+O usuario tem uma lista que é formada com todos os nomes adiocionados permitindo ele editar o registro cadastrado ou excluir.
+Se necessario o usuario pode adicionar uma observação na escala criada. que será exibida quando ele gerar o arquivo em pdf.
