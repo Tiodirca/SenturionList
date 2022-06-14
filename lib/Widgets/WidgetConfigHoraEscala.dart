@@ -31,6 +31,20 @@ class _WidgetConfigHoraEscalaState extends State<WidgetConfigHoraEscala> {
     recuperarHoraMudadoECultoExtra();
   }
 
+  gravarDadosPadrao() async {
+    //metodo para gravar informacoes padroes no share preferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString(
+        Constantes.primeiroHSemana, Constantes.horarioInicialSemana);
+    prefs.setString(Constantes.segundoHSemana, Constantes.horarioFinalSemana);
+    prefs.setString(
+        Constantes.primeiroHFSemana, Constantes.horarioInicialFSemana);
+    prefs.setString(Constantes.segundoHFSemana, Constantes.horarioFinalFsemana);
+    prefs.setBool(Constantes.trocaHoraPregacao, false);
+    prefs.setBool(Constantes.cultosExtras, false);
+    recuperarHoraMudadoECultoExtra();
+  }
+
   //metodo para recuperar o horario gravado no share prefereces
   recuperarHoraMudadoECultoExtra() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -52,21 +66,25 @@ class _WidgetConfigHoraEscalaState extends State<WidgetConfigHoraEscala> {
   mudarHorario(String qualHoraMudar) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     //variavel que vai receber o novo horario
-    TimeOfDay? novoHorario =
-        await showTimePicker(context: context, initialTime: horario!,helpText: Textos.txtLegendaTimePicker,builder: (context, child) {
-          return Theme(
-            data: ThemeData.dark().copyWith(
-              colorScheme:
-              const ColorScheme.light(
-                primary:Colors.white,
-                onPrimary: PaletaCores.corAdtlLetras,
-                surface: PaletaCores.corAdtl,
-                onSurface: Colors.white,
-              ),
+    TimeOfDay? novoHorario = await showTimePicker(
+      context: context,
+      initialTime: horario!,
+      helpText: Textos.txtLegendaTimePicker,
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Colors.white,
+              onPrimary: PaletaCores.corAdtlLetras,
+              surface: PaletaCores.corAdtl,
+              onSurface: Colors.white,
             ),
-            child: child!,
-          );
-        }, );
+          ),
+          child: child!,
+        );
+      },
+    );
+
     if (novoHorario != null) {
       setState(() {
         horario = novoHorario;
@@ -93,6 +111,7 @@ class _WidgetConfigHoraEscalaState extends State<WidgetConfigHoraEscala> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool(Constantes.cultosExtras, boolCultosExtras);
   }
+
   //metodo para mudar status caso o radio button para troca na hora da pregacao
   //mudando valores quando ativado e quando desativado
   trocaHoraPregacao() async {
@@ -115,6 +134,30 @@ class _WidgetConfigHoraEscalaState extends State<WidgetConfigHoraEscala> {
     }
   }
 
+  // widget responsavel por mostrar os horarios de troca configurados
+  Widget selecaoHorario(double larguraTela, String legendaIndicadora,
+          String horario, String estadoMudarHorario) =>
+      SizedBox(
+        width: larguraTela,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(legendaIndicadora),
+            Text(horario),
+            SizedBox(
+              height: 40,
+              width: 40,
+              child: IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () async {
+                  mudarHorario(estadoMudarHorario);
+                },
+              ),
+            ),
+          ],
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     double alturaTela = MediaQuery.of(context).size.height;
@@ -122,155 +165,118 @@ class _WidgetConfigHoraEscalaState extends State<WidgetConfigHoraEscala> {
     return Card(
       elevation: 20,
       child: Container(
-        padding: const EdgeInsets.all(5),
-        width: larguraTela,
-        height: alturaTela * 0.6,
-        child: Column(
-          children: [
-            Text(Textos.txtTrocarHoraDes,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 17)),
-            const SizedBox(
-              height: 10,
-            ),
-            Text(Textos.txtTrocarHoraSemana,style: const TextStyle(
-              fontWeight: FontWeight.bold
-            )),
-            Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
+          padding: const EdgeInsets.all(5),
+          width: larguraTela,
+          height: alturaTela * 0.6,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Column(
               children: [
-                SizedBox(
-                  width: larguraTela,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(Textos.txtTrocaPrimeiroHorario),
-                      Text(primeiroHorarioSemana),
-                      SizedBox(
-                        height: 40,
-                        width: 40,
-                        child: IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () async {
-                            mudarHorario(Constantes.primeiroHSemana);
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+                Text(Textos.txtTrocarHoraDes,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 17)),
+                const SizedBox(
+                  height: 10,
                 ),
-                SizedBox(
-                  width: larguraTela,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(Textos.txtTrocaSegundoHorario),
-                      Text(segundoHorarioSemana),
-                      SizedBox(
-                        height: 40,
-                        width: 40,
-                        child: IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () async {
-                            mudarHorario(Constantes.segundoHSemana);
-                          },
-                        ),
+
+                Text(Textos.txtTrocarHoraSemana,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                // selecao HORARIO SEMANA
+                selecaoHorario(larguraTela, Textos.txtTrocaPrimeiroHorario,
+                    primeiroHorarioSemana, Constantes.primeiroHSemana),
+                selecaoHorario(larguraTela, Textos.txtTrocaSegundoHorario,
+                    segundoHorarioSemana, Constantes.segundoHSemana),
+                Text(Textos.txtTrocarHoraFinalSemana,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                // selecao HORARIO FINAL DE SEMANA
+                selecaoHorario(larguraTela, Textos.txtTrocaPrimeiroHorario,
+                    primeiroHFSemana, Constantes.primeiroHFSemana),
+                selecaoHorario(larguraTela, Textos.txtTrocaSegundoHorario,
+                    segundoHFSemana, Constantes.segundoHFSemana),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  children: [
+                    SizedBox(
+                      height: 20,
+                      child: Text(Textos.txtTrocaHoraPregacao,
+                          textAlign: TextAlign.center),
+                    ),
+                    SizedBox(
+                      height: 20,
+                      child: Switch(
+                          value: boolTrocaHoraPregacao,
+                          activeColor: PaletaCores.corAdtl,
+                          onChanged: (bool valor) {
+                            setState(() {
+                              boolTrocaHoraPregacao = valor;
+                              trocaHoraPregacao();
+                            });
+                          }),
+                    )
+                  ],
+                ),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  children: [
+                    SizedBox(
+                      height: 20,
+                      child: Text(Textos.txtTrocaCultoExtras,
+                          textAlign: TextAlign.center),
+                    ),
+                    SizedBox(
+                      height: 20,
+                      child: Switch(
+                          value: boolCultosExtras,
+                          activeColor: PaletaCores.corAdtl,
+                          onChanged: (bool valor) {
+                            setState(() {
+                              boolCultosExtras = valor;
+                              cultosExtras();
+                            });
+                          }),
+                    ),
+                    SizedBox(
+                      width: larguraTela,
+                      child: Column(
+                        children: [
+                          Text(Textos.txtLegTrocaResetarHorario,
+                              textAlign: TextAlign.center,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold)),
+                          Container(
+                            padding: const EdgeInsets.all(5),
+                            height: 45,
+                            width: 45,
+                            child: FloatingActionButton(
+                              heroTag: "resetarValores",
+                              backgroundColor: PaletaCores.corAdtlLetras,
+                              child: const Icon(Icons.update),
+                              onPressed: () {
+                                setState(() {
+                                  gravarDadosPadrao();
+                                });
+                              },
+                            ),
+                          )
+                        ],
                       ),
-                    ],
-                  ),
+                    )
+                  ],
+                ),
+                Column(
+                  children: [
+                    Text(Textos.txtDesenvolvedor,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.bold)),
+                    Text(Textos.txtNomeDev,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 16)),
+                  ],
                 )
               ],
             ),
-            Text(Textos.txtTrocarHoraFinalSemana,style: const TextStyle(
-                fontWeight: FontWeight.bold
-            )),
-            Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                SizedBox(
-                  width: larguraTela,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(Textos.txtTrocaPrimeiroHorario),
-                      Text(primeiroHFSemana),
-                      SizedBox(
-                        height: 40,
-                        width: 40,
-                        child: IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () async {
-                            mudarHorario(Constantes.primeiroHFSemana);
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  width: larguraTela,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(Textos.txtTrocaSegundoHorario),
-                      Text(segundoHFSemana),
-                      SizedBox(
-                        height: 40,
-                        width: 40,
-                        child: IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () async {
-                            mudarHorario(Constantes.segundoHFSemana);
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(Textos.txtTrocaHoraPregacao),
-                Switch(
-                    value: boolTrocaHoraPregacao,
-                    activeColor: PaletaCores.corAdtl,
-                    onChanged: (bool valor) {
-                      setState(() {
-                        boolTrocaHoraPregacao = valor;
-                        trocaHoraPregacao();
-                      });
-                    })
-              ],
-            ),
-            Wrap(
-              alignment: WrapAlignment.center,
-              children: [
-                Text(Textos.txtTrocaCultoExtras),
-                Switch(
-                    value: boolCultosExtras,
-                    activeColor: PaletaCores.corAdtl,
-                    onChanged: (bool valor) {
-                      setState(() {
-                        boolCultosExtras = valor;
-                        cultosExtras();
-                      });
-                    })
-              ],
-            ),
-            Column(
-              children: [
-                Text(Textos.txtDesenvolvedor,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 17,fontWeight: FontWeight.bold)),
-                Text(Textos.txtNomeDev,
-                    textAlign: TextAlign.center, style: const TextStyle(fontSize: 16)),
-              ],
-            )
-          ],
-        ),
-      ),
+          )),
     );
   }
 }

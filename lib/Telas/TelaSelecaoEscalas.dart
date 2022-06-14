@@ -132,7 +132,7 @@ class _TelaSelecaoEscalasState extends State<TelaSelecaoEscalas> {
                 const SizedBox(
                   height: 10,
                 ),
-                Row(
+                Wrap(
                   children: [
                     Text(
                       Textos.txtAlertExclusaoTab,
@@ -141,7 +141,7 @@ class _TelaSelecaoEscalasState extends State<TelaSelecaoEscalas> {
                       width: 10,
                     ),
                     Text(
-                      tabelaSelecionada,
+                      tabelaSelecionada.replaceAll(RegExp(r'_'), ' '),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],

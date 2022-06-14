@@ -26,22 +26,25 @@ class Textos {
   static String erroTextCadVazio = "Digite um nome no campo.";
 
   static String txtTrocarHoraDes =
-      "Seleção do horario para a troca de cooperadores(a).";
+      "Seleção do Horário para a troca de cooperadores(a).";
   static String txtTrocarHoraSemana = "Horário de troca durante a semana";
   static String txtTrocarHoraFinalSemana =
-      "Horario de troca durante o final de semana";
-  static String txtTrocaPrimeiroHorario = "1° Horario Inicia às: ";
-  static String txtTrocaSegundoHorario = "2° Horario Inicia às: ";
+      "Horário de troca durante o final de semana";
+  static String txtTrocaPrimeiroHorario = "1° Horário Inicia às: ";
+  static String txtTrocaSegundoHorario = "2° Horário Inicia às: ";
   static String txtTrocaCultoExtras =
       "Cultos Extras, liberar cadastro todos os dias da semana.";
   static String txtTrocaHoraPregacao =
       "Trocar quando começar a ministração da palavra.";
   static String txtLegTrocaHoraPregacao = "quando começar a ministração.";
+  static String txtLegTrocaResetarHorario = "Redefinir configurações.";
 
   static String txtAlertExclusao = "Confirmação de exclusão";
   static String txtAlertExclusaoDes =
       "Deseja realmente excluir está escala do banco de dados ?";
   static String txtAlertExclusaoTab = "Escala a ser excluida: ";
+
+  static String txtLegandaScroll = "Arraste para os lados para ver todos os campos.";
   static String txtAlertExclusaoDesItem =
       "Deseja realmente excluir este item da escala ?";
   static String txtAlertExclusaoItem = "Data do item a ser excluido: ";

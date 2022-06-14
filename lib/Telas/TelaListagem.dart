@@ -83,7 +83,8 @@ class _TelaListagemState extends State<TelaListagem> {
 
 //metodo para recuperar dados do banco de dados
   chamarRecuperarObservacao() async {
-    await servicoobservacoes.ServicoObservacoes.recuperarObservacoesPorTabela(tabela)
+    await servicoobservacoes.ServicoObservacoes.recuperarObservacoesPorTabela(
+            tabela)
         .then((lista) {
       setState(() {
         //verificando se a lista retornada nao e vazia
@@ -127,12 +128,12 @@ class _TelaListagemState extends State<TelaListagem> {
 
   chamarAtualizarObservacao() async {
     String observacaoAtualizar = _controllerObservacaoTabela.text;
-    print("D:" + idObservacao + "T:" + tabela);
-    String retornoMetodo = await servicoobservacoes.ServicoObservacoes.atualizarObservacao(
-        idObservacao, observacaoAtualizar, tabela);
-    print(retornoMetodo);
+    String retornoMetodo =
+        await servicoobservacoes.ServicoObservacoes.atualizarObservacao(
+            idObservacao, observacaoAtualizar, tabela);
     if (retornoMetodo == Constantes.retornoJsonSucesso) {
-      Navigator.pushReplacementNamed(context, Constantes.rotaVerLista, arguments: tabela);
+      Navigator.pushReplacementNamed(context, Constantes.rotaVerLista,
+          arguments: tabela);
     } else {
       final snackBarError = SnackBar(
           content: Text('Não foi possivel atualizar os dados: $retornoMetodo'));
@@ -144,13 +145,15 @@ class _TelaListagemState extends State<TelaListagem> {
     String observacao = _controllerObservacaoTabela.text;
     //definindo que a variavel vai receber o retorno do metodo
     String retornoMetodo =
-        await servicoobservacoes.ServicoObservacoes.adicionarObservacao(observacao, tabela);
+        await servicoobservacoes.ServicoObservacoes.adicionarObservacao(
+            observacao, tabela);
     //verificando se o retorno foi igual ao esperado
     if (retornoMetodo == Constantes.retornoJsonSucesso) {
       //criando snack bar para exibir ao usuario
       final snackBarSucesso = SnackBar(content: Text(Textos.snackSucesso));
       ScaffoldMessenger.of(context).showSnackBar(snackBarSucesso);
-      Navigator.pushReplacementNamed(context, Constantes.rotaVerLista, arguments: tabela);
+      Navigator.pushReplacementNamed(context, Constantes.rotaVerLista,
+          arguments: tabela);
     } else {
       setState(() {
         exibirTelas = Constantes.argVerListaInicial;
@@ -295,7 +298,8 @@ class _TelaListagemState extends State<TelaListagem> {
                       ),
                       Container(
                         alignment: Alignment.centerRight,
-                        padding: EdgeInsets.only(left: 0.0,top: 0.0,right: 10.0,bottom: 0.0),
+                        padding: const EdgeInsets.only(
+                            left: 0.0, top: 0.0, right: 10.0, bottom: 10.0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
@@ -327,9 +331,11 @@ class _TelaListagemState extends State<TelaListagem> {
                                 },
                               ),
                             ),
-
                           ],
                         ),
+                      ),
+                      Text(
+                        Textos.txtLegandaScroll
                       ),
                       Container(
                         alignment: Alignment.center,
@@ -518,7 +524,7 @@ class _TelaListagemState extends State<TelaListagem> {
                                     decoration: InputDecoration(
                                         labelText: Textos.labelObservacao,
                                         labelStyle: const TextStyle(
-                                          color:PaletaCores.corAdtl,
+                                          color: PaletaCores.corAdtl,
                                         ),
                                         //definindo estilo do textfied
                                         enabledBorder: OutlineInputBorder(
@@ -584,7 +590,8 @@ class _TelaListagemState extends State<TelaListagem> {
                           )),
                       Container(
                         width: larguraTela,
-                        margin: const EdgeInsets.only(left: 0.0,bottom: 0.0,right: 0.0,top: 10.0),
+                        margin: const EdgeInsets.only(
+                            left: 0.0, bottom: 0.0, right: 0.0, top: 10.0),
                         child: Wrap(
                           alignment: WrapAlignment.center,
                           children: [
@@ -611,7 +618,6 @@ class _TelaListagemState extends State<TelaListagem> {
                                             chamarAdicionarObservacao();
                                           }
                                         });
-
                                       }
                                     }
                                   },
