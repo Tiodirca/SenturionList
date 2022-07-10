@@ -6,10 +6,10 @@ import '../Uteis/AjustarVisualizacao.dart';
 import '../Uteis/Constantes.dart';
 import 'package:intl/intl.dart';
 import '../Uteis/PaletaCores.dart';
+import '../Uteis/Servicos/banco_de_dados.dart';
 import '../Uteis/Textos.dart';
 import '../Widgets/WidgetFundoTelas.dart';
 import '../Widgets/WidgetTelaCarregamento.dart';
-import '../uteis/Servicos/ServicosItens.dart' as servicoitem;
 
 class TelaAtualizar extends StatefulWidget {
   final String nomeTabela;
@@ -73,13 +73,82 @@ class _TelaAtualizarState extends State<TelaAtualizar> {
   final snackBarPreencherData = SnackBar(content: Text(Textos.erroData));
   final snackBarSucesso = SnackBar(content: Text(Textos.snackAtualizar));
 
+  // referencia nossa classe para gerenciar o banco de dados
+  final bancoDados = BancoDeDados.instance;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     statusTelaCarregamento = true;
     recuperarHorarioEscalaCultoExtra();
-    chamarRecuperarDados();
+    //chamarRecuperarDados();
+    consultarDados();
+    _lista = [];
+    statusTelaCarregamento = false;
+  }
+
+  //metodo para realizar a consulta no banco de dados
+  // e preencher a lista com os dados
+  void consultarDados() async {
+    final registros = await bancoDados.consultarPorID(tabela, id);
+    setState(() {
+      for (var linha in registros) {
+        _lista.add(ListaModelo(
+            id: linha[Constantes.bancoId].toString(),
+            primeiroHorario: linha[Constantes.jsonPrimeiroHorario],
+            segundoHorario: linha[Constantes.jsonSegundoHorario],
+            primeiroHorarioPulpito:
+                linha[Constantes.jsonPrimeiroHorarioPulpito],
+            segundoHorarioPulpito: linha[Constantes.jsonSegundoHorarioPulpito],
+            mesaApoio: linha[Constantes.jsonMesaApoio],
+            dataSemana: linha[Constantes.jsonDataSemana],
+            horario: linha[Constantes.jsonHorario],
+            recolherOferta: linha[Constantes.jsonRecolherOferta],
+            reserva: linha[Constantes.jsonReserva],
+            servirCeia: linha[Constantes.jsonServirCeia],
+            uniforme: linha[Constantes.jsonUniforme]));
+      }
+    });
+    //chamando metodo para preecher todos os campos
+    preencherCampos();
+  }
+
+  // metodo para atualizar os dados no banco de dados
+  atualizarDados() async {
+    var primeiroHorario = listagemRetorno[Constantes.jsonPrimeiroHorario];
+    var segundoHorario = listagemRetorno[Constantes.jsonSegundoHorario];
+    var primeiroHorarioPulpito =
+        listagemRetorno[Constantes.jsonPrimeiroHorarioPulpito];
+    var segundoHorarioPulpito =
+        listagemRetorno[Constantes.jsonSegundoHorarioPulpito];
+    var recolherOferta = listagemRetorno[Constantes.jsonRecolherOferta];
+    var uniforme = listagemRetorno[Constantes.jsonUniforme];
+    var mesaApoio = listagemRetorno[Constantes.jsonMesaApoio];
+    var servirCeia = listagemRetorno[Constantes.jsonServirCeia];
+    var dataSemana = listagemRetorno[Constantes.jsonDataSemana];
+    var horario = listagemRetorno[Constantes.jsonHorario];
+    var reserva = listagemRetorno[Constantes.jsonReserva];
+
+    // linha para incluir os dados
+    Map<String, dynamic> linha = {
+      BancoDeDados.bancoPrimeiroHorario: primeiroHorario,
+      BancoDeDados.bancoSegundoHorario: segundoHorario,
+      BancoDeDados.bancoPrimeiroHPulpito: primeiroHorarioPulpito,
+      BancoDeDados.bancoSegundoHPulpito: segundoHorarioPulpito,
+      BancoDeDados.bancoRecolherOferta: recolherOferta,
+      BancoDeDados.bancoUniforme: uniforme,
+      BancoDeDados.bancoMesaApoio: mesaApoio,
+      BancoDeDados.bancoServirCeia: servirCeia,
+      BancoDeDados.bancoData: dataSemana,
+      BancoDeDados.bancoHorario: horario,
+      BancoDeDados.bancoReserva: reserva,
+    };
+    await bancoDados.atualizar(linha, tabela,
+        int.parse(id)); // chamando metodo responsavel por atualziar
+    ScaffoldMessenger.of(context).showSnackBar(snackBarSucesso);
+    Navigator.pushReplacementNamed(context, Constantes.rotaVerLista,
+        arguments: tabela);
   }
 
   // metodo para receperar os dados gravados no share preferences
@@ -236,66 +305,6 @@ class _TelaAtualizarState extends State<TelaAtualizar> {
     return listagemDados;
   }
 
-  chamarAtualizar() async {
-    // criando variaveis e referenciando elas
-    var primeiroHorario = listagemRetorno[Constantes.jsonPrimeiroHorario];
-    var segundoHorario = listagemRetorno[Constantes.jsonSegundoHorario];
-    var primeiroHorarioPulpito =
-        listagemRetorno[Constantes.jsonPrimeiroHorarioPulpito];
-    var segundoHorarioPulpito =
-        listagemRetorno[Constantes.jsonSegundoHorarioPulpito];
-    var recolherOferta = listagemRetorno[Constantes.jsonRecolherOferta];
-    var uniforme = listagemRetorno[Constantes.jsonUniforme];
-    var mesaApoio = listagemRetorno[Constantes.jsonMesaApoio];
-    var servirCeia = listagemRetorno[Constantes.jsonServirCeia];
-    var dataSemana = listagemRetorno[Constantes.jsonDataSemana];
-    var horario = listagemRetorno[Constantes.jsonHorario];
-    var reserva = listagemRetorno[Constantes.jsonReserva];
-
-    //definindo que a variavel do tipo string vai receber o retorno do metodo
-    retornoMetodo = await servicoitem.ServicosItens.atualizar(
-        id,
-        primeiroHorario,
-        segundoHorario,
-        primeiroHorarioPulpito,
-        segundoHorarioPulpito,
-        recolherOferta,
-        uniforme,
-        mesaApoio,
-        servirCeia,
-        dataSemana,
-        horario,
-        tabela,
-        reserva);
-    if (retornoMetodo == Constantes.retornoJsonSucesso) {
-      ScaffoldMessenger.of(context).showSnackBar(snackBarSucesso);
-      Navigator.pushReplacementNamed(context, Constantes.rotaVerLista,
-          arguments: tabela);
-    } else {
-      setState(() {
-        statusTelaCarregamento = false;
-      });
-      final snackBarError = SnackBar(
-          content: Text(
-              'Não foi possivel realizar a operação no banco de dados: $retornoMetodo'));
-      ScaffoldMessenger.of(context).showSnackBar(snackBarError);
-    }
-  }
-
-  //metodo para chamar o recuperar dados do banco de dados
-  chamarRecuperarDados() async {
-    // //chamando metodo e mudando o estado da variavel
-    await servicoitem.ServicosItens.recuperarDadosPorID(tabela, id)
-        .then((lista) {
-      setState(() {
-        //deixando campos visiveis e invisiveis
-        statusTelaCarregamento = false;
-        _lista = lista;
-        preencherCampos();
-      });
-    });
-  }
-
   preencherCampos() {
     _controllerPriHorario.text = _lista
         .map((e) => e.primeiroHorario)
@@ -443,7 +452,9 @@ class _TelaAtualizarState extends State<TelaAtualizar> {
                                 const SizedBox(
                                   height: 10,
                                 ),
-                                Text(Textos.txtEscalaSelecionada),
+                                Text(Textos.txtEscalaSelecionada, style: const TextStyle(
+                                  fontSize: 16,
+                                )),
                                 Text(
                                   tabela.replaceAll(RegExp(r'_'), ' '),
                                   style: const TextStyle(
@@ -522,7 +533,7 @@ class _TelaAtualizarState extends State<TelaAtualizar> {
                                         height: 5,
                                       ),
                                       Text(data,
-                                          style: const TextStyle(fontSize: 15)),
+                                          style: const TextStyle(fontSize: 16)),
                                       const SizedBox(
                                         height: 10,
                                       ),
@@ -536,7 +547,9 @@ class _TelaAtualizarState extends State<TelaAtualizar> {
                                       right: 10.0,
                                       top: 0.0),
                                   child: Text(Textos.txtDesCampoVazio,
-                                      textAlign: TextAlign.center),
+                                      textAlign: TextAlign.center, style: const TextStyle(
+                                        fontSize: 16,
+                                      )),
                                 ),
                                 Container(
                                   padding: const EdgeInsets.only(
@@ -1041,7 +1054,8 @@ class _TelaAtualizarState extends State<TelaAtualizar> {
                                         fontSize: 18,
                                       ),
                                     ),
-                                    Text(retornoHorarioEscala,textAlign: TextAlign.center),
+                                    Text(retornoHorarioEscala,
+                                        textAlign: TextAlign.center),
                                   ],
                                 ),
                               ],
@@ -1128,7 +1142,7 @@ class _TelaAtualizarState extends State<TelaAtualizar> {
                                           setState(() {
                                             statusTelaCarregamento = true;
                                           });
-                                          chamarAtualizar();
+                                          atualizarDados();
                                         }
                                       }
                                     },

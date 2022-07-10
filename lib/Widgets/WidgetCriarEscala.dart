@@ -3,9 +3,8 @@ import 'package:senturionlistv2/Uteis/Constantes.dart';
 import 'package:senturionlistv2/Widgets/WidgetTelaCarregamento.dart';
 
 import '../Uteis/PaletaCores.dart';
+import '../Uteis/Servicos/banco_de_dados.dart';
 import '../Uteis/Textos.dart';
-import '../uteis/Servicos/ServicosTabela.dart' as servicotabela;
-import '../uteis/Servicos/ServicoObservacoes.dart' as servicoobservacoes;
 
 class WidgetCriarEscala extends StatefulWidget {
   const WidgetCriarEscala({Key? key}) : super(key: key);
@@ -27,55 +26,26 @@ class _WidgetCriarEscalaState extends State<WidgetCriarEscala> {
   final TextEditingController _controllerObservacaoTabela =
       TextEditingController(text: "");
 
+  // referencia nossa classe para gerenciar o banco de dados
+  final bancoDados = BancoDeDados.instance;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
   }
 
-  //metodo para chamar metodo de servico para criacao da tabela no banco de dados
-  chamarCriarTabelas() async {
+  criarTabelaLocal() {
     setState(() {
       exibirTelaCarregamento = true;
     });
-    //instanciando variavel que vai receber o que for digitado no textField
-    String nomeTabela = _controllerCadastrarTabela.text.replaceAll(RegExp(r' '), '_');
-    //definindo que a variavel vai receber o retorno do metodo
-    String retornoMetodoCriar = await servicotabela.ServicosTabela.criarTabela(
-        nomeTabela, Constantes.acaoCriarTabela);
-    //verificando se o retorno foi igual ao esperado
-    if (retornoMetodoCriar == Constantes.retornoJsonSucesso) {
-      //criando snack bar para exibir ao usuario
-      final snackBarSucesso = SnackBar(content: Text(Textos.snackSucesso));
-      ScaffoldMessenger.of(context).showSnackBar(snackBarSucesso);
-        chamarCriarTabelaObservacao();
-    } else {
-      setState(() {
-        exibirTelaCarregamento = false;
-        nomeTabela = "";
-      });
-      //instanciando variavel que vai receber o retorno do metodo
-      final snackBarError = SnackBar(
-          content:
-              Text('Não foi possivel criar a escala: $retornoMetodoCriar'));
-      ScaffoldMessenger.of(context).showSnackBar(snackBarError);
-    }
-  }
-
-  //metodo para chamar metodo de servico para criacao da tabela no banco de dados
-  chamarCriarTabelaObservacao() async {
-    String nomeTabela = _controllerCadastrarTabela.text;
-   String retorno =  await servicotabela.ServicosTabela.criarTabela(
-        nomeTabela, Constantes.acaoCriarTabelaObservacao);
-    setState(() {
-      if(retorno == Constantes.retornoJsonSucesso){
-        Navigator.pushReplacementNamed(context, Constantes.rotaCadastrar,
-            arguments: nomeTabela);
-      }else{
-        Navigator.pushReplacementNamed(context, Constantes.rotaCadastrar,
-            arguments: nomeTabela);
-      }
-    });
+    String nomeTabela =
+        _controllerCadastrarTabela.text.replaceAll(RegExp(r' '), '_');
+    bancoDados.criarTabela(nomeTabela);
+    final snackBarSucesso = SnackBar(content: Text(Textos.snackSucesso));
+    ScaffoldMessenger.of(context).showSnackBar(snackBarSucesso);
+    Navigator.pushReplacementNamed(context, Constantes.rotaCadastrar,
+        arguments: nomeTabela);
   }
 
   // metodo para adicionar observacao a escala
@@ -85,8 +55,6 @@ class _WidgetCriarEscalaState extends State<WidgetCriarEscala> {
     if (valorRadioButton == 1) {
       observacao = _controllerObservacaoTabela.text;
     }
-    await servicoobservacoes.ServicoObservacoes.adicionarObservacao(
-        observacao, nomeTabela);
   }
 
   //metodo para mudar o estado do radio button
@@ -128,7 +96,8 @@ class _WidgetCriarEscalaState extends State<WidgetCriarEscala> {
               children: [
                 Text(Textos.btnCriarEscala,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 17)),
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold)),
                 const SizedBox(
                   height: 10,
                 ),
@@ -136,7 +105,7 @@ class _WidgetCriarEscalaState extends State<WidgetCriarEscala> {
                   children: [
                     Text(
                       Textos.criarEscalaDescricao,
-                      style: const TextStyle(fontSize: 15),
+                      style: const TextStyle(fontSize: 16),
                       textAlign: TextAlign.center,
                     ),
                     Form(
@@ -144,9 +113,7 @@ class _WidgetCriarEscalaState extends State<WidgetCriarEscala> {
                       child: Container(
                         padding: const EdgeInsets.only(
                             left: 5.0, top: 5.0, right: 5.0, bottom: 5.0),
-                        //definindo espaçamento interno do container
                         width: 300,
-                        //definindo o textField
                         child: TextFormField(
                           keyboardType: TextInputType.text,
                           controller: _controllerCadastrarTabela,
@@ -160,7 +127,6 @@ class _WidgetCriarEscalaState extends State<WidgetCriarEscala> {
                               labelText: Textos.labelNomeEscala,
                               labelStyle:
                                   const TextStyle(color: PaletaCores.corAdtl),
-                              //definindo estilo do textfied
                               enabledBorder: OutlineInputBorder(
                                 borderSide: const BorderSide(
                                     width: 1, color: Colors.black),
@@ -187,7 +153,9 @@ class _WidgetCriarEscalaState extends State<WidgetCriarEscala> {
                     ),
                     Column(
                       children: [
-                        Text(Textos.criarEscalaDesRadioObservacao),
+                        Text(Textos.criarEscalaDesRadioObservacao,
+                            style: const TextStyle(fontSize: 16),
+                            textAlign: TextAlign.center),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -199,7 +167,7 @@ class _WidgetCriarEscalaState extends State<WidgetCriarEscala> {
                                   mudarRadioButton(0);
                                 }),
                             const Text(
-                              'Não',
+                              'Não',style: TextStyle(fontSize: 16),
                             ),
                             Radio(
                                 value: 1,
@@ -211,7 +179,7 @@ class _WidgetCriarEscalaState extends State<WidgetCriarEscala> {
                             const Text(
                               'Sim',
                               style: TextStyle(
-                                fontSize: 16.0,
+                                fontSize: 16,
                               ),
                             ),
                           ],
@@ -278,12 +246,13 @@ class _WidgetCriarEscalaState extends State<WidgetCriarEscala> {
                             if (valorRadioButton == 1) {
                               if (_formKeyObservacao.currentState!.validate() &&
                                   _formKeyTabela.currentState!.validate()) {
-                                chamarCriarTabelas();
-                                chamarAdicionarObservacao();
+                                //chamarCriarTabelas();
+                                // chamarAdicionarObservacao();
                               }
                             } else {
                               if (_formKeyTabela.currentState!.validate()) {
-                                chamarCriarTabelas();
+                                criarTabelaLocal();
+                                //chamarCriarTabelas();
                               }
                             }
                           },

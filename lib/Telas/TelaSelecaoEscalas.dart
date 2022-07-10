@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:senturionlistv2/Modelo/TabelaModelo.dart';
 import 'package:senturionlistv2/Widgets/WidgetCriarEscala.dart';
 import 'package:senturionlistv2/Widgets/WidgetTelaCarregamento.dart';
 
@@ -7,10 +8,9 @@ import '../Modelo/MostrarTabelas.dart';
 import '../Modelo/Observacoes.dart';
 import '../Uteis/Constantes.dart';
 import '../Uteis/PaletaCores.dart';
+import '../Uteis/Servicos/banco_de_dados.dart';
 import '../Uteis/Textos.dart';
 import '../Widgets/WidgetFundoTelas.dart';
-import '../uteis/Servicos/ServicosTabela.dart' as servicotabela;
-import '../uteis/Servicos/ServicoObservacoes.dart' as servicoobservacao;
 
 class TelaSelecaoEscalas extends StatefulWidget {
   const TelaSelecaoEscalas({Key? key}) : super(key: key);
@@ -28,94 +28,40 @@ class _TelaSelecaoEscalasState extends State<TelaSelecaoEscalas> {
   String observacao = "";
   String idObservacao = "";
   late List<MostrarTabelas> tabela;
+  late List<TabelaModelo> tabelaLocal;
+  var nomeTabelas;
   late List<Observacoes> listaObservacao;
 
-  //metodo para chamar o metodo do servico para recuperar as tabelas contidas no banco de dados
-  chamarRecuperarTabelas() async {
-    //chamando metodo e mudando o estado da variavel
-    await servicotabela.ServicosTabela.recuperarTabelas().then((lista) {
-      setState(() {
-        //definindo que a variavel global vai receber o valor da variavel local
-        tabela = lista;
-        //removendo o item da lista que contem a palavra especificada
-        lista.removeWhere((item) => item.tabelas == 'Observacoes');
-        //verificando se a lista retornada nao e vazia
-        if (lista.isNotEmpty) {
-          //defindo nome para o item do dropDown
-          nomeItemDrop = lista.first.tabelas;
-        } else {
-          nomeItemDrop = "";
-        }
-        statusTelaCarregamento = false;
-        if (lista.isEmpty) {
-          setState(() {
-            exibirTelas = exibirTelas = Constantes.argErroRecuperarDados;
-          });
-        } else {
-          exibirTelas = exibirTelas = Constantes.argVerListaInicial;
-        }
-      });
-    });
-  }
+  // referencia nossa classe para gerenciar o banco de dados
+  final bancoDados = BancoDeDados.instance;
 
-  //metodo para recuperar dados do banco de dados
-  chamarRecuperarIDObservacao() async {
-    await servicoobservacao.ServicoObservacoes.recuperarObservacoesPorTabela(
-            tabelaSelecionada)
-        .then((lista) {
-      setState(() {
-        //verificando se a lista retornada nao e vazia
-        if (lista.isNotEmpty) {
-          // removendo todos os item que nao contenham no campo especificado o nome da tabela
-          lista.removeWhere((item) => item.nomeTabela != tabelaSelecionada);
-          setState(() {
-            idObservacao = lista
-                .map((e) => e.id)
-                .toString()
-                .replaceAll(RegExp(r'[),(]'), '');
-            statusTelaCarregamento = false;
-          });
-        }else{
-          statusTelaCarregamento = false;
-        }
-      });
-    });
-  }
-
-  //metodo pra chamar metodo do servico para deletar tabela do banco de dados
-  chamarDeletarTabelas() async {
+  //metodo para chamar o metodo do servico para
+  // recuperar as tabelas contidas no banco de dados
+  chamarRecuperarTabelasLocais() async {
+    final tabelas = await bancoDados.consultaTabela(); //fazendo consulta
     setState(() {
-      statusTelaCarregamento = true;
+      exibirTelas = Constantes.argVerListaInicial;
+      statusTelaCarregamento = false;
     });
-    if(idObservacao.isNotEmpty){
-      String retornoDeletarObservacao =
-      await servicoobservacao.ServicoObservacoes.deletarObservacao(idObservacao, tabelaSelecionada);
-      if (retornoDeletarObservacao == Constantes.retornoJsonSucesso) {
-        final snackBarSucesso =
-        SnackBar(content: Text(Textos.snackDeletarObservacao));
-        ScaffoldMessenger.of(context).showSnackBar(snackBarSucesso);
-      }
+    //pegando os elementos e adicionando em outra tabela para manipulacao
+    for (var linha in tabelas) {
+      nomeTabelas = linha['name'];
+      nomeItemDrop = nomeTabelas;
+      tabelaLocal.add(TabelaModelo(nomeTabela: nomeTabelas));
     }
-    String retornoMetodoDeletar =
-       await servicotabela.ServicosTabela.deletarTabela(tabelaSelecionada);
-    //verificando se o retorno foi igual ao esperado
-    if (retornoMetodoDeletar == Constantes.retornoJsonSucesso) {
-      //criando snack bar para exibir ao usuario
-      final snackBarSucesso =
-          SnackBar(content: Text(Textos.selecaoEscalasSnacKDeletar));
-      ScaffoldMessenger.of(context).showSnackBar(snackBarSucesso);
-      //definindo um set state para mudar o estado
-      setState(() {
-        exibirConfirmacaoEscala = false;
-        chamarRecuperarTabelas();
-      });
-    } else {
-      //criando snack bar para exibir ao usuario
-      final snackBarError = SnackBar(
-          content: Text(
-              'Não foi possivel deletar está escala: $retornoMetodoDeletar'));
-      ScaffoldMessenger.of(context).showSnackBar(snackBarError);
-    }
+    //removendo primeiro index contem valor desnecessario
+    tabelaLocal.removeAt(0);
+  }
+
+  //sobre escrevendo o metodo init state
+  @override
+  void initState() {
+    super.initState();
+    //iniciando variavel
+    tabela = [];
+    tabelaLocal = [];
+    // chamando metodo
+    chamarRecuperarTabelasLocais();
   }
 
   Future<void> alertExclusao() async {
@@ -165,24 +111,24 @@ class _TelaSelecaoEscalasState extends State<TelaSelecaoEscalas> {
                 style: TextStyle(color: Colors.black),
               ),
               onPressed: () {
-                chamarDeletarTabelas();
+                bancoDados.excluirTabela(tabelaSelecionada);
                 Navigator.of(context).pop();
+                setState(() {
+                  statusTelaCarregamento = true;
+                  chamarRecuperarTabelasLocais();
+                  final snackBarSucesso =
+                      SnackBar(content: Text(Textos.snackSucesso));
+                  ScaffoldMessenger.of(context).showSnackBar(snackBarSucesso);
+                  nomeItemDrop = "";
+                  tabelaLocal = [];
+                  exibirConfirmacaoEscala = false;
+                });
               },
             ),
           ],
         );
       },
     );
-  }
-
-  //sobre escrevendo o metodo init state
-  @override
-  void initState() {
-    super.initState();
-    //iniciando variavel
-    tabela = [];
-    // chamando metodo
-    chamarRecuperarTabelas();
   }
 
   @override
@@ -222,12 +168,13 @@ class _TelaSelecaoEscalasState extends State<TelaSelecaoEscalas> {
                       return Column(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(10),
+                            padding: const EdgeInsets.all(20),
                             alignment: Alignment.center,
-                            child: Text(
-                              Textos.selecaoEscalasDes,
-                              textAlign: TextAlign.center,
-                            ),
+                            child: Text(Textos.selecaoEscalasDes,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                )),
                           ),
                           const SizedBox(
                             height: 50,
@@ -237,10 +184,11 @@ class _TelaSelecaoEscalasState extends State<TelaSelecaoEscalas> {
                                 vertical: 0.0, horizontal: 10.0),
                             child: Column(
                               children: [
-                                Text(
-                                  Textos.btnCriarEscala,
-                                  textAlign: TextAlign.center,
-                                ),
+                                Text(Textos.btnCriarEscala,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                    )),
                                 Container(
                                   padding: const EdgeInsets.all(5),
                                   height: 50,
@@ -264,14 +212,18 @@ class _TelaSelecaoEscalasState extends State<TelaSelecaoEscalas> {
                           ),
                           Column(
                             children: [
-                              Text(Textos.selecaoEscalasDesDropDown),
+                              Text(Textos.selecaoEscalasDesDropDown,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                  )),
                               DropdownButton(
-                                value: nomeItemDrop,
+                                value:
+                                    nomeItemDrop,
                                 icon: const Icon(Icons.list_alt_outlined),
-                                items: tabela
+                                items: tabelaLocal
                                     .map((item) => DropdownMenuItem<String>(
-                                          child: Text(item.tabelas.replaceAll(RegExp(r'_'), ' ')),
-                                          value: item.tabelas,
+                                          child: Text(item.nomeTabela.replaceAll(RegExp(r'_'), ' ')),
+                                          value: item.nomeTabela,
                                         ))
                                     .toList(),
                                 onChanged: (String? value) {
@@ -279,8 +231,8 @@ class _TelaSelecaoEscalasState extends State<TelaSelecaoEscalas> {
                                     nomeItemDrop = value!;
                                     tabelaSelecionada = value;
                                     exibirConfirmacaoEscala = true;
-                                    statusTelaCarregamento = true;
-                                    chamarRecuperarIDObservacao();
+                                    //statusTelaCarregamento = true;
+                                    //chamarRecuperarIDObservacao();
                                   });
                                 },
                               ),
@@ -295,14 +247,19 @@ class _TelaSelecaoEscalasState extends State<TelaSelecaoEscalas> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          const Text("Escala selecionada:"),
+                                          const Text("Escala selecionada:",
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                              )),
                                           const SizedBox(
                                             width: 10,
                                           ),
                                           Text(
-                                            tabelaSelecionada.replaceAll(RegExp(r'_'), ' '),
+                                            tabelaSelecionada.replaceAll(
+                                                RegExp(r'_'), ' '),
                                             style: const TextStyle(
-                                                fontWeight: FontWeight.bold),
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16),
                                           ),
                                         ],
                                       ),
@@ -356,6 +313,7 @@ class _TelaSelecaoEscalasState extends State<TelaSelecaoEscalas> {
                                               height: 50,
                                               width: 50,
                                               child: FloatingActionButton(
+                                                heroTag: "deletar",
                                                 backgroundColor: Colors.red,
                                                 child: const Icon(Icons
                                                     .delete_forever_outlined),
@@ -383,17 +341,11 @@ class _TelaSelecaoEscalasState extends State<TelaSelecaoEscalas> {
                               width: 40,
                               child: FloatingActionButton(
                                 backgroundColor: Colors.red,
-                                heroTag: "fecharObservacao",
+                                heroTag: "fecharCriacaoTabela",
                                 child: const Icon(Icons.close),
                                 onPressed: () {
                                   setState(() {
-                                    if (nomeItemDrop.isEmpty) {
-                                      exibirTelas =
-                                          Constantes.argErroRecuperarDados;
-                                    } else {
-                                      exibirTelas =
-                                          Constantes.argVerListaInicial;
-                                    }
+                                    exibirTelas = Constantes.argVerListaInicial;
                                   });
                                 },
                               ),
@@ -407,62 +359,7 @@ class _TelaSelecaoEscalasState extends State<TelaSelecaoEscalas> {
                         ),
                       );
                     } else {
-                      return Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 350,
-                            child: Text(
-                              Textos.erroBuscaBanco,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.red,
-                                  fontSize: 18),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(5),
-                                height: 50,
-                                width: 50,
-                                child: FloatingActionButton(
-                                  heroTag: "adicionar",
-                                  backgroundColor: Colors.green,
-                                  child: const Icon(Icons.add),
-                                  onPressed: () {
-                                    setState(() {
-                                      exibirTelas =
-                                          Constantes.argSelecaoEscalaCriar;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(5),
-                                height: 50,
-                                width: 50,
-                                child: FloatingActionButton(
-                                  heroTag: "recarregar",
-                                  backgroundColor: PaletaCores.corAdtlLetras,
-                                  child: const Icon(Icons.refresh),
-                                  onPressed: () {
-                                    setState(() {
-                                      statusTelaCarregamento = true;
-                                    });
-                                    chamarRecuperarTabelas();
-                                  },
-                                ),
-                              )
-                            ],
-                          )
-                        ],
-                      );
+                      return Container();
                     }
                   }),
                 ),

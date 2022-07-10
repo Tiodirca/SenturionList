@@ -22,6 +22,7 @@ class _WidgetConfigHoraEscalaState extends State<WidgetConfigHoraEscala> {
   bool mudarTelaConfig = true;
   bool boolCultosExtras = false;
   bool boolTrocaHoraPregacao = false;
+  bool bancoLocal = false;
 
   @override
   void initState() {
@@ -42,6 +43,7 @@ class _WidgetConfigHoraEscalaState extends State<WidgetConfigHoraEscala> {
     prefs.setString(Constantes.segundoHFSemana, Constantes.horarioFinalFsemana);
     prefs.setBool(Constantes.trocaHoraPregacao, false);
     prefs.setBool(Constantes.cultosExtras, false);
+    prefs.setBool(Constantes.bancoLocal, false);
     recuperarHoraMudadoECultoExtra();
   }
 
@@ -215,6 +217,9 @@ class _WidgetConfigHoraEscalaState extends State<WidgetConfigHoraEscala> {
                     )
                   ],
                 ),
+                const SizedBox(
+                  height: 10,
+                ),
                 Wrap(
                   alignment: WrapAlignment.center,
                   children: [
@@ -260,7 +265,7 @@ class _WidgetConfigHoraEscalaState extends State<WidgetConfigHoraEscala> {
                           )
                         ],
                       ),
-                    )
+                    ),
                   ],
                 ),
                 Column(

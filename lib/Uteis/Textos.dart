@@ -16,9 +16,7 @@ class Textos {
   static String btnAtualizarObservacao = "Atualizar Observação";
 
   // textos de erros
-  static String erroBuscaBanco =
-      "Possivelmente sua busca retornou uma lista vazia, "
-      "tente realizar uma nova busca ou adicione um nome elemento.";
+  static String erroBuscaBanco = "Esta escala ainda nao contem nenhum item";
   static String erroData = "Selecione pelo menos uma data que tenha culto.";
   static String erroUniforme = "Digite um modelo de uniforme.";
   static String erroTextObservacao = "Digite uma observação para está tabela.";
@@ -38,13 +36,15 @@ class Textos {
       "Trocar quando começar a ministração da palavra.";
   static String txtLegTrocaHoraPregacao = "quando começar a ministração.";
   static String txtLegTrocaResetarHorario = "Redefinir configurações.";
+  static String txtUsarBancoLocal = "Usar Banco de dados local.";
 
   static String txtAlertExclusao = "Confirmação de exclusão";
   static String txtAlertExclusaoDes =
       "Deseja realmente excluir está escala do banco de dados ?";
   static String txtAlertExclusaoTab = "Escala a ser excluida: ";
 
-  static String txtLegandaScroll = "Arraste para os lados para ver todos os campos.";
+  static String txtLegandaScroll =
+      "Arraste para os lados para ver todos os campos.";
   static String txtAlertExclusaoDesItem =
       "Deseja realmente excluir este item da escala ?";
   static String txtAlertExclusaoItem = "Data do item a ser excluido: ";
@@ -60,10 +60,6 @@ class Textos {
   static String selecaoEscalasDes = "Selecione uma opção antes de prosseguir.";
   static String selecaoEscalasDesDropDown =
       "Clique na lista abaixo para selecionar uma escala.";
-  static String selecaoEscalasSnacKDeletar =
-      "Sucesso ao deletar escala do banco de dados.";
-  static String snackDeletarObservacao =
-      "Sucesso ao apagar a observação da escala selecionada do banco de dados.";
 
   static String labelNomeEscala = "Nome da escala";
   static String labelObservacao = "Observação da escala";
@@ -86,8 +82,6 @@ class Textos {
   static String labelHoraTroca = "Hora das Trocas";
   static String labelNomePDF = "Nome Final do PDF";
 
-
-
   // Strings para o widget de criacao de escalas
   static String criarEscalaDescricao =
       "Digite o nome da escala que deseja criar no banco de dados.";
@@ -105,7 +99,8 @@ class Textos {
       "Sucesso ao atualizar escala do banco de dados.";
   static String cadDescricao =
       "Cadastro de item na escala de cooperador(a) da ADTL - Parque São Carlos";
-  static String cadTxtSemCulto = "Sem culto na data selecionada. vá em configurações(tela inicial) para ativar o cadastro de cultos extras.";
+  static String cadTxtSemCulto =
+      "Sem culto na data selecionada. vá em configurações(tela inicial) para ativar o cadastro de cultos extras.";
   static String cadTxtAddSucesso = "Dados adicionados com sucesso.";
   static String txtGerarPDFDescricao = "Gerar arquivo em PDF";
   static String txtGerarPDFInfoOpcoes =

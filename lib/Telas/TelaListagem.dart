@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:senturionlistv2/Modelo/Observacoes.dart';
 import 'package:senturionlistv2/Widgets/WidgetGerarPDF.dart';
 
 import '../Modelo/ListaModelo.dart';
 import '../Uteis/Constantes.dart';
+import 'package:intl/intl.dart';
 import '../Uteis/PaletaCores.dart';
+import '../Uteis/Servicos/banco_de_dados.dart';
 import '../Uteis/Textos.dart';
 import '../Widgets/WidgetFundoTelas.dart';
-
-import 'package:intl/intl.dart';
 import '../Widgets/WidgetTelaCarregamento.dart';
-import '../uteis/Servicos/ServicosItens.dart' as servicoitem;
-import '../uteis/Servicos/ServicoObservacoes.dart' as servicoobservacoes;
 
 class TelaListagem extends StatefulWidget {
   final String nomeTabela;
@@ -31,15 +28,16 @@ class _TelaListagemState extends State<TelaListagem> {
   bool textFieldObservacao = false;
   String exibirTelas = Constantes.argTelaCarregamento;
   late List<ListaModelo> _listaModelo;
-  late List<Observacoes> listaObservacao;
   String observacao = "";
   String nomeBotao = "";
-  String idObservacao = "";
   final TextEditingController _controllerObservacaoTabela =
       TextEditingController(text: "");
 
   //variavel usada para validar o formulario
   final chaveObservacao = GlobalKey<FormState>();
+
+  // referencia nossa classe para gerenciar o banco de dados
+  final bancoDados = BancoDeDados.instance;
 
   //sobre escrevendo o metodo init state
   @override
@@ -47,121 +45,43 @@ class _TelaListagemState extends State<TelaListagem> {
     super.initState();
     //iniciando variaveis
     _listaModelo = [];
-    listaObservacao = [];
-    // chamando metodo
-    chamarRecuperarDados();
+    consultarEscala();
   }
 
-  chamarRecuperarDados() async {
-    await servicoitem.ServicosItens.recuperarItens(tabela).then((lista) {
+  //metodo para realizar a consulta no banco de dados
+  void consultarEscala() async {
+    final registros = await bancoDados.consultarLinhas(tabela);
+    if (registros.isEmpty) {
       setState(() {
-        if (lista.isEmpty) {
-          exibirTelas = Constantes.argTelaListaVazia;
-        } else {
-          chamarRecuperarObservacao();
-          lista.sort((a, b) => DateFormat("dd/MM/yyyy EEEE", "pt_BR")
-              .parse(a.dataSemana)
-              .compareTo(
-                  DateFormat("dd/MM/yyyy EEEE", "pt_BR").parse(b.dataSemana)));
-          _listaModelo = lista;
-        }
+        exibirTelas = Constantes.argTelaListaVazia;
       });
-    });
-  }
-
-  chamarDeletar(ListaModelo listaModelo) {
-    servicoitem.ServicosItens.deletar(listaModelo.id, tabela).then((result) {
-      if ('sucesso' == result) {
-        const snackBarSucesso =
-            SnackBar(content: Text('Item apagado com sucesso.'));
-        ScaffoldMessenger.of(context).showSnackBar(snackBarSucesso);
-        //chamando metodo
-        chamarRecuperarDados();
-      }
-    });
-  }
-
-//metodo para recuperar dados do banco de dados
-  chamarRecuperarObservacao() async {
-    await servicoobservacoes.ServicoObservacoes.recuperarObservacoesPorTabela(
-            tabela)
-        .then((lista) {
+    } else {
       setState(() {
-        //verificando se a lista retornada nao e vazia
-        if (lista.isNotEmpty) {
-          listaObservacao = lista;
-          // removendo todos os item que nao contenham no campo especificado o nome da tabela
-          lista.removeWhere((item) => item.nomeTabela != tabela);
-          setState(() {
-            exibirTelas = Constantes.argVerListaInicial;
-            observacao = lista
-                .map((e) => e.observacaoTabela)
-                .toString()
-                .replaceAll(RegExp(r'[),(]'), '');
-            idObservacao = lista
-                .map((e) => e.id)
-                .toString()
-                .replaceAll(RegExp(r'[),(]'), '');
-          });
-        } else {
-          setState(() {
-            if (_listaModelo.isNotEmpty) {
-              statusObservacao = false;
-            }
-            exibirTelas = Constantes.argVerListaInicial;
-          });
+        for (var linha in registros) {
+          _listaModelo.add(ListaModelo(
+              id: linha[Constantes.bancoId].toString(),
+              primeiroHorario: linha[Constantes.jsonPrimeiroHorario],
+              segundoHorario: linha[Constantes.jsonSegundoHorario],
+              primeiroHorarioPulpito:
+                  linha[Constantes.jsonPrimeiroHorarioPulpito],
+              segundoHorarioPulpito:
+                  linha[Constantes.jsonSegundoHorarioPulpito],
+              mesaApoio: linha[Constantes.jsonMesaApoio],
+              dataSemana: linha[Constantes.jsonDataSemana],
+              horario: linha[Constantes.jsonHorario],
+              recolherOferta: linha[Constantes.jsonRecolherOferta],
+              reserva: linha[Constantes.jsonReserva],
+              servirCeia: linha[Constantes.jsonServirCeia],
+              uniforme: linha[Constantes.jsonUniforme]));
         }
-      });
-    });
-    if (observacao.isEmpty) {
-      setState(() {
+        //ordenando a lista da data mais antiga para a mais recente
+        _listaModelo.sort((a, b) => DateFormat("dd/MM/yyyy EEEE", "pt_BR")
+            .parse(a.dataSemana)
+            .compareTo(
+                DateFormat("dd/MM/yyyy EEEE", "pt_BR").parse(b.dataSemana)));
         statusObservacao = false;
-        nomeBotao = Textos.btnAdicionarObservacao;
-      });
-    } else {
-      setState(() {
-        nomeBotao = Textos.btnAtualizarObservacao;
-        statusObservacao = true;
-      });
-    }
-  }
-
-  chamarAtualizarObservacao() async {
-    String observacaoAtualizar = _controllerObservacaoTabela.text;
-    String retornoMetodo =
-        await servicoobservacoes.ServicoObservacoes.atualizarObservacao(
-            idObservacao, observacaoAtualizar, tabela);
-    if (retornoMetodo == Constantes.retornoJsonSucesso) {
-      Navigator.pushReplacementNamed(context, Constantes.rotaVerLista,
-          arguments: tabela);
-    } else {
-      final snackBarError = SnackBar(
-          content: Text('Não foi possivel atualizar os dados: $retornoMetodo'));
-      ScaffoldMessenger.of(context).showSnackBar(snackBarError);
-    }
-  }
-
-  chamarAdicionarObservacao() async {
-    String observacao = _controllerObservacaoTabela.text;
-    //definindo que a variavel vai receber o retorno do metodo
-    String retornoMetodo =
-        await servicoobservacoes.ServicoObservacoes.adicionarObservacao(
-            observacao, tabela);
-    //verificando se o retorno foi igual ao esperado
-    if (retornoMetodo == Constantes.retornoJsonSucesso) {
-      //criando snack bar para exibir ao usuario
-      final snackBarSucesso = SnackBar(content: Text(Textos.snackSucesso));
-      ScaffoldMessenger.of(context).showSnackBar(snackBarSucesso);
-      Navigator.pushReplacementNamed(context, Constantes.rotaVerLista,
-          arguments: tabela);
-    } else {
-      setState(() {
         exibirTelas = Constantes.argVerListaInicial;
       });
-      //instanciando variavel que vai receber o retorno do metodo
-      final snackBarError = SnackBar(
-          content: Text('Não foi possivel criar a escala: $retornoMetodo'));
-      ScaffoldMessenger.of(context).showSnackBar(snackBarError);
     }
   }
 
@@ -219,8 +139,10 @@ class _TelaListagemState extends State<TelaListagem> {
                 setState(() {
                   exibirTelas = Constantes.argTelaCarregamento;
                 });
-                chamarDeletar(listaModelo);
+                bancoDados.excluir(int.parse(listaModelo.id), tabela);
                 Navigator.of(context).pop();
+                _listaModelo = [];
+                consultarEscala();
               },
             ),
           ],
@@ -287,11 +209,14 @@ class _TelaListagemState extends State<TelaListagem> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Text(Textos.txtEscalaSelecionada),
+                            Text(Textos.txtEscalaSelecionada,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                )),
                             Text(
                               tabela.replaceAll(RegExp(r'_'), ' '),
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16),
                             ),
                           ],
                         ),
@@ -312,7 +237,8 @@ class _TelaListagemState extends State<TelaListagem> {
                                 backgroundColor: Colors.green,
                                 child: const Icon(Icons.refresh),
                                 onPressed: () {
-                                  chamarRecuperarDados();
+                                  _listaModelo = [];
+                                  consultarEscala();
                                 },
                               ),
                             ),
@@ -334,9 +260,10 @@ class _TelaListagemState extends State<TelaListagem> {
                           ],
                         ),
                       ),
-                      Text(
-                        Textos.txtLegandaScroll
-                      ),
+                      Text(Textos.txtLegandaScroll,
+                          style: const TextStyle(
+                            fontSize: 16,
+                          )),
                       Container(
                         alignment: Alignment.center,
                         margin: const EdgeInsets.symmetric(
@@ -613,10 +540,7 @@ class _TelaListagemState extends State<TelaListagem> {
                                           exibirTelas =
                                               Constantes.argTelaCarregamento;
                                           if (observacao.isNotEmpty) {
-                                            chamarAtualizarObservacao();
-                                          } else {
-                                            chamarAdicionarObservacao();
-                                          }
+                                          } else {}
                                         });
                                       }
                                     }
@@ -815,22 +739,6 @@ class _TelaListagemState extends State<TelaListagem> {
                         Navigator.pushReplacementNamed(
                             context, Constantes.rotaCadastrar,
                             arguments: tabela);
-                      },
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    height: 50,
-                    width: 50,
-                    child: FloatingActionButton(
-                      heroTag: "RecarregarListaErro",
-                      backgroundColor: PaletaCores.corAdtlLetras,
-                      child: const Icon(Icons.refresh),
-                      onPressed: () {
-                        setState(() {
-                          exibirTelas = Constantes.argTelaCarregamento;
-                        });
-                        chamarRecuperarDados();
                       },
                     ),
                   )

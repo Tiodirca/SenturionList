@@ -6,7 +6,7 @@ class Constantes {
   static const String telaAtualizarItens = "Atualização de itens na escala";
 
   static const String rotaSplashScreen = "/splashScreen";
-  static const String rotaCadastrar  = "/cadastrar";
+  static const String rotaCadastrar = "/cadastrar";
   static const String rotaSelecaoEscala = "/selecaoEscala";
   static const String rotaVerLista = "/verLista";
   static const String rotaAtualizar = "/atualizar";
@@ -38,6 +38,7 @@ class Constantes {
   static const String segundoHFSemana = "segundoHFSemana";
   static const String cultosExtras = "cultosExtras";
   static const String trocaHoraPregacao = "trocaHoraPregacao";
+  static const String bancoLocal = "bancoLocal";
 
   // constantes para gravar string vazias nos campos
   static const String definirMaiusculo = "Definir";
@@ -61,14 +62,16 @@ class Constantes {
   static const String jsonObservacaoTabela = "observacaoTabela";
   static const String jsonNomeTabela = "nomeTabela";
 
-  static const acaoCriarTabela = "criarTabela";
-  static const acaoCriarTabelaObservacao = "criarTabelaObservacao";
+  static const String acaoCriarTabela = "criarTabela";
+  static const String acaoCriarTabelaObservacao = "criarTabelaObservacao";
 
-  static const horarioInicialSemana = "18:45";
-  static const horarioFinalSemana = "19:45";
-  static const horarioInicialFSemana = "18:00";
-  static const horarioFinalFsemana = "19:00";
+  static const String horarioInicialSemana = "18:45";
+  static const String horarioFinalSemana = "19:45";
+  static const String horarioInicialFSemana = "18:00";
+  static const String horarioFinalFsemana = "19:00";
 
-
+  static const String nomeBanco = "senturionList.db";
+  static const String nomeTabela = 'escalas';
+  static const String bancoId = 'id';
 
 }
